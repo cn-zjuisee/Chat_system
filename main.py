@@ -28,20 +28,21 @@ if __name__ == '__main__':
     aserver = Audio_Server(PORT+1, VERSION)
     wclient = Word_Client(IP, PORT + 2, VERSION)
     wserver = Word_Server(PORT + 2, VERSION)
-    # vclient.start()
-    # vserver.start()
-    # aclient.start()
-    # aserver.start()
+    vclient.start()
+    vserver.start()
+    aclient.start()
+    aserver.start()
+    time.sleep(1)  # Waiting for video and audio initialization
     wclient.start()
     wserver.start()
     while True:
         time.sleep(1)
-        # if not vserver.isAlive() or not vclient.isAlive():
-        #     print("Video connection lost...")
-        #     sys.exit(0)
-        # if not aserver.isAlive() or not aclient.isAlive():
-        #     print("Audio connection lost...")
-        #     sys.exit(0)
+        if not vserver.isAlive() or not vclient.isAlive():
+            print("Video connection lost...")
+            sys.exit(0)
+        if not aserver.isAlive() or not aclient.isAlive():
+            print("Audio connection lost...")
+            sys.exit(0)
         if not wserver.isAlive() or not wclient.isAlive():
             print("Word connection lost...")
             sys.exit(0)

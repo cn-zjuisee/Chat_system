@@ -1,7 +1,8 @@
 import requests
 import json
 
-def tuling_reply(url, apikey, msg):
+
+def call_robot(url, apikey, msg):
     data = {  # 这个是在帮助手册上直接复制过来的，"url"=="https://www.kancloud.cn/turing/www-tuling123-com/718227"
         # """与reqType在同一级的参数有：{
         # reqType : 输入类型
@@ -39,9 +40,9 @@ def tuling_reply(url, apikey, msg):
             # 客户端属性信息
             "selfInfo": {  # location 为selfInfo的参数信息，
                 "location": {  # 地理位置信息
-                    "city": "深圳",  # 所在城市，不允许为空
-                    "province": "广东省",  # 所在省份，允许为空
-                    "street": "南山"  # 所在街道，允许为空
+                    "city": "杭州",  # 所在城市，不允许为空
+                    "province": "浙江省",  # 所在省份，允许为空
+                    "street": "灵隐街道"  # 所在街道，允许为空
                 }
             },
         },
@@ -83,15 +84,13 @@ def tuling_reply(url, apikey, msg):
     return r.json()
 
 
-if __name__ == '__main__':
+def auto_reply(msg):
     apikey = 'ee19328107fa41e987a42a064a68d0da'  # 填入机器人的apikey
     url = 'http://openapi.tuling123.com/openapi/api/v2'  # 图灵机器人的v2.0接口地址
-    # print(json.dumps(tuling_reply.data))
     while True:
-        msg = input('(输入exit结束)> ').strip()
         if not msg:
             continue
         if msg == 'exit':
             break
-        reply = tuling_reply(url, apikey, msg)
-        print(reply["results"][0]["values"]["text"])  # 可以直接打印reply
+        reply = call_robot(url, apikey, msg)
+        return reply["results"][0]["values"]["text"]

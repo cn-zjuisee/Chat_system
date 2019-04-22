@@ -1,19 +1,16 @@
 from socket import *
 import threading
 import pyaudio
-import wave
-import sys
-import zlib
 import struct
 import pickle
 import time
-import numpy as np
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
 RATE = 44100
 RECORD_SECONDS = 0.5
+
 
 class Audio_Server(threading.Thread):
     def __init__(self, port, version) :
@@ -60,8 +57,9 @@ class Audio_Server(threading.Thread):
             for frame in frames:
                 self.stream.write(frame, CHUNK)
 
+
 class Audio_Client(threading.Thread):
-    def __init__(self ,ip, port, version):
+    def __init__(self, ip, port, version):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.ADDR = (ip, port)
@@ -72,12 +70,14 @@ class Audio_Client(threading.Thread):
         self.p = pyaudio.PyAudio()
         self.stream = None
         print("AUDIO client starts...")
+
     def __del__(self) :
         self.sock.close()
         if self.stream is not None:
             self.stream.stop_stream()
             self.stream.close()
         self.p.terminate()
+
     def run(self):
         while True:
             try:

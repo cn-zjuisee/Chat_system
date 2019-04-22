@@ -1,13 +1,7 @@
 from socket import *
 import threading
-import cv2
 import sys
-import struct
-import pickle
-import time
-import zlib
-import numpy as np
-
+from turling import auto_reply
 
 class Word_Server(threading.Thread):
     def __init__(self, port, version) :
@@ -15,24 +9,25 @@ class Word_Server(threading.Thread):
         self.setDaemon(True)
         self.ADDR = ('', port)
         if version == 4:
-            self.sock = socket(AF_INET, SOCK_STREAM)
+            self.sock = socket()
         else:
-            self.sock = socket(AF_INET6, SOCK_STREAM)
+            self.sock = socket(AF_INET6)
 
     def run(self):
         print("WORD server starts...")
         self.sock.bind(self.ADDR)
         self.sock.listen(1)
         conn, addr = self.sock.accept()
-        # print("remote WORD client success connected...")
-        while 1:
-            try:
-                buf = conn.recv(1024)
-                if len(buf):
-                    print("Client: ", buf)
-                data = input("Sever: ")
-                conn.sendall(data)
-            except:
+
+        while True:
+
+            buf = conn.recv(1024).decode('UTF-8')
+            print("Client: ", buf)
+            # data = input("Sever: ")
+            data = auto_reply(buf)
+            conn.send(data.encode('utf-8'))
+
+            if data == 'exit':
                 print("Dialogue Over")
                 conn.close()
                 sys.exit(0)
@@ -50,22 +45,17 @@ class Word_Client(threading.Thread):
         print("WORD client starts...")
 
     def run(self):
-        while True:
-            try:
-                self.sock.connect(self.ADDR)
-                break
-            except:
-                time.sleep(3)
-                continue
 
-        while 1:
-            try:
-                data = input("Client: ")
-                self.sock.send(data)
-                buf = self.sock.recv(1024)
-                if len(buf):
-                    print("Sever: ", buf)
-            except:
+        self.sock.connect(self.ADDR)
+        print("WORD client connected...")
+
+        while True:
+            data = input("Client: ")
+            if data == 'exit':
                 print("Dialogue Over")
                 self.sock.close()
                 sys.exit(0)
+            self.sock.send(data.encode('UTF-8'))
+
+            buf = self.sock.recv(1024).decode('UTF-8')
+            print("Sever: ", buf)
