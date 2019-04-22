@@ -23,12 +23,14 @@ class Audio_Server(threading.Thread):
             self.sock = socket(AF_INET6 ,SOCK_STREAM)
         self.p = pyaudio.PyAudio()
         self.stream = None
+
     def __del__(self):
         self.sock.close()
         if self.stream is not None:
             self.stream.stop_stream()
             self.stream.close()
         self.p.terminate()
+
     def run(self):
         print("AUDIO server starts...")
         self.sock.bind(self.ADDR)
