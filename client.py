@@ -103,7 +103,7 @@ b4 = ''
 # 将图片打开存入变量中
 p1 = tkinter.PhotoImage(file='./emoji/facepalm.png')
 p2 = tkinter.PhotoImage(file='./emoji/smirk.png')
-p3 = tkinter.PhotoImage(file='./emoji//concerned.png')
+p3 = tkinter.PhotoImage(file='./emoji/concerned.png')
 p4 = tkinter.PhotoImage(file='./emoji/smart.png')
 # 用字典将标记与表情图片一一对应, 用于后面接收标记判断表情贴图
 dic = {'aa**': p1, 'bb**': p2, 'cc**': p3, 'dd**': p4}
