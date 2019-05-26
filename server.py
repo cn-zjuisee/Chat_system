@@ -188,7 +188,7 @@ class FileServer(threading.Thread):
             if data == 'quit':
                 print('Disconnected from {0}'.format(addr))
                 break
-            order = data.split()[0]                             # 获取动作
+            order = data.split(' ')[0]                             # 获取动作
             self.recv_func(order, data)
                 
         conn.close()
@@ -209,7 +209,7 @@ class FileServer(threading.Thread):
                 if not a:
                     break
                 self.conn.send(a)
-        time.sleep(0.1)  # 延时确保文件发送完整
+        time.sleep(0.1)                                          # 延时确保文件发送完整
         self.conn.send('EOF'.encode())
 
     # 保存上传的文件到当前工作目录

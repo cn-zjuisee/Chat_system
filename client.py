@@ -379,7 +379,9 @@ def fileClient():
 
     # 接收下载文件(get)
     def get(message):
-        name = message.split()
+        # print(message)
+        name = message.split(' ')
+        # print(name)
         name = name[1]  # 获取命令的第二个参数(文件名)
         # 选择对话框, 选择文件的保存路径
         fileName = tkinter.filedialog.asksaveasfilename(title='Save file to', initialfile=name)
@@ -398,11 +400,13 @@ def fileClient():
     # 创建用于绑定在列表框上的函数
     def run(*args):
         indexs = list2.curselection()
+        print(indexs)
         index = indexs[0]
+        print(index)
         content = list2.get(index)
         # 如果有一个 . 则为文件
         if '.' in content:
-            content = 'get' + content
+            content = 'get ' + content
             get(content)
             cd('cd same')
         elif content == 'Return to the previous dir':
