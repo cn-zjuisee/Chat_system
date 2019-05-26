@@ -81,7 +81,7 @@ if user == '':
 # 创建图形界面
 root = tkinter.Tk()
 root.title(user)                         # 窗口命名为用户名
-root['height'] = 400
+root['height'] = 390
 root['width'] = 580
 root.resizable(0, 0)                     # 限制窗口大小
 
@@ -177,13 +177,13 @@ def fileGet(name):
     ss2.connect((IP, PORT3))
     message = 'get ' + name
     ss2.send(message.encode())
-    fileName = '.\\Client image cache\\' + name
-    print('Start downloading image!')
+    fileName = '.\\客户端图片缓存\\' + name
+    print('开始下载文件!')
     with open(fileName, 'wb') as f:
         while True:
             data = ss2.recv(1024)
             if data == 'EOF'.encode():
-                print('Download completed!')
+                print('下载完成!')
                 break
             f.write(data)
     time.sleep(0.1)
@@ -193,14 +193,14 @@ def fileGet(name):
 # 将图片上传到图片服务端的缓存文件夹中
 def filePut(fileName):
     PORT3 = 50009
-    ss = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ss = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
     ss.connect((IP, PORT3))
     # 截取文件名
     name = fileName.split('/')[-1]
     message = 'put  ' + name
     ss.send(message.encode())
     time.sleep(0.1)
-    print('Start uploading image!')
+    print('开始上传文件!')
     with open(fileName, 'rb') as f:
         while True:
             a = f.read(1024)
@@ -209,7 +209,7 @@ def filePut(fileName):
             ss.send(a)
         time.sleep(0.1)  # 延时确保文件发送完整
         ss.send('EOF'.encode())
-        print('Upload completed')
+        print('文件上传成功')
     ss.send('quit'.encode())
     time.sleep(0.1)
     # 上传成功后发一个信息给所有客户端
@@ -219,7 +219,7 @@ def filePut(fileName):
 
 def picture():
     # 选择对话框
-    fileName = tkinter.filedialog.askopenfilename(title='Select upload image')
+    fileName = tkinter.filedialog.askopenfilename(title='选择上传文件')
     # 如果有选择文件才继续执行
     if fileName:
         # 调用发送图片函数
@@ -227,107 +227,96 @@ def picture():
 
 
 # 创建发送图片按钮
-pBut = tkinter.Button(root, text='Image', command=picture)
+pBut = tkinter.Button(root, text='图片', command=picture)
 pBut.place(x=65, y=320, width=60, height=30)
 
-
-# 截屏函数如下所示
+#截屏函数如下所示
 class MyCapture:
     def __init__(self, png):
-        # 变量X和Y用来记录鼠标左键按下的位置
+        #变量X和Y用来记录鼠标左键按下的位置
         self.X = tkinter.IntVar(value=0)
         self.Y = tkinter.IntVar(value=0)
-        # 屏幕尺寸
+        #屏幕尺寸
         screenWidth = root.winfo_screenwidth()
         screenHeight = root.winfo_screenheight()
-        # 创建顶级组件容器
+        #创建顶级组件容器
         self.top = tkinter.Toplevel(root, width=screenWidth, height=screenHeight)
-        # 不显示最大化、最小化按钮
+        #不显示最大化、最小化按钮
         self.top.overrideredirect(True)
-        self.canvas = tkinter.Canvas(self.top, bg='white', width=screenWidth, height=screenHeight)
-        # 显示全屏截图，在全屏截图上进行区域截图
+        self.canvas = tkinter.Canvas(self.top,bg='white', width=screenWidth, height=screenHeight)
+        #显示全屏截图，在全屏截图上进行区域截图
         self.image = tkinter.PhotoImage(file=png)
         self.canvas.create_image(screenWidth/2, screenHeight/2, image=self.image)
-        self.sel = None
-        # 鼠标左键按下的位置
-
+        #鼠标左键按下的位置
         def onLeftButtonDown(event):
             self.X.set(event.x)
             self.Y.set(event.y)
-            # 开始截图
+            #开始截图
             self.sel = True
         self.canvas.bind('<Button-1>', onLeftButtonDown)
-
-        # 鼠标左键移动，显示选取的区域
+        #鼠标左键移动，显示选取的区域
         def onLeftButtonMove(event):
             if not self.sel:
                 return
             global lastDraw
             try:
-                # 删除刚画完的图形，要不然鼠标移动的时候是黑乎乎的一片矩形
+                #删除刚画完的图形，要不然鼠标移动的时候是黑乎乎的一片矩形
                 self.canvas.delete(lastDraw)
             except Exception as e:
-                print(e)
+                pass
             lastDraw = self.canvas.create_rectangle(self.X.get(), self.Y.get(), event.x, event.y, outline='black')
         self.canvas.bind('<B1-Motion>', onLeftButtonMove)
-
-        # 获取鼠标左键抬起的位置，保存区域截图
+        #获取鼠标左键抬起的位置，保存区域截图
         def onLeftButtonUp(event):
             self.sel = False
             try:
                 self.canvas.delete(lastDraw)
             except Exception as e:
-                print(e)
+                pass
             sleep(0.1)
-            # 考虑鼠标左键从右下方按下而从左上方抬起的截图
+            #考虑鼠标左键从右下方按下而从左上方抬起的截图
             left, right = sorted([self.X.get(), event.x])
             top, bottom = sorted([self.Y.get(), event.y])
             pic = ImageGrab.grab((left+1, top+1, right, bottom))
-            # 弹出保存截图对话框
-            fileName = tkinter.filedialog.asksaveasfilename(title='Save screenshot',
-                                                            filetypes=[('image', '*.jpg *.png')])
+            #弹出保存截图对话框
+            fileName = tkinter.filedialog.asksaveasfilename(title='保存截图', filetypes=[('image', '*.jpg *.png')])
             if fileName:
                 pic.save(fileName)
-            # 关闭当前窗口
+            #关闭当前窗口
             self.top.destroy()
         self.canvas.bind('<ButtonRelease-1>', onLeftButtonUp)
-        # 让canvas充满窗口，并随窗口自动适应大小
+#让canvas充满窗口，并随窗口自动适应大小
         self.canvas.pack(fill=tkinter.BOTH, expand=tkinter.YES)
 
-
-# 开始截图
+ #开始截图
 def buttonCaptureClick():
-    # 最小化主窗口
+    #最小化主窗口
     root.state('icon')
     sleep(0.2)
     filename = 'temp.png'
-    # grab()方法默认对全屏幕进行截图
+#grab()方法默认对全屏幕进行截图
     im = ImageGrab.grab()
     im.save(filename)
     im.close()
-    # 显示全屏幕截图
+    #显示全屏幕截图
     w = MyCapture(filename)
     buttonCapture.wait_window(w.top)
-    # 截图结束，恢复主窗口，并删除临时的全屏幕截图文件
+    #截图结束，恢复主窗口，并删除临时的全屏幕截图文件
     root.state('normal')
     os.remove(filename)
-
-
 # 创建截屏按钮
-sBut = tkinter.Button(root, text='Capture', command=buttonCaptureClick)
+sBut = tkinter.Button(root, text='截屏', command=buttonCaptureClick)
 sBut.place(x=125, y=320, width=60, height=30)
 
-# 文件功能代码部分
-# 将在文件功能窗口用到的组件名都列出来, 方便重新打开时会对面板进行更新
-list2 = ''                           # 列表框
-label = ''                           # 显示路径的标签
-upload = ''                          # 上传按钮
-close = ''                           # 关闭按钮
-
-
+###### 文件功能代码部分
+## 将在文件功能窗口用到的组件名都列出来, 方便重新打开时会对面板进行更新
+list2 = ''  # 列表框
+label = ''  # 显示路径的标签
+upload = ''  # 上传按钮
+close = ''  # 关闭按钮
 def fileClient():
-    PORT2 = 50008                    # 聊天室的端口为50007
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    PORT2 = 50008    # 聊天室的端口为50007
+    s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
     s.connect((IP, PORT2))
 
     # 修改root窗口大小显示文件管理的组件
@@ -343,14 +332,14 @@ def fileClient():
         s.send(enter.encode())
         data = s.recv(4096)  
         data = json.loads(data.decode())
-        list2.delete(0, tkinter.END)                      # 清空列表框
+        list2.delete(0, tkinter.END)  # 清空列表框
         lu = lu.split('\\')
         if len(lu) != 1:
-            list2.insert(tkinter.END, 'Return to the previous dir')
+            list2.insert(tkinter.END, ' 返回上一级目录')
             list2.itemconfig(0, fg='green')
         for i in range(len(data)):
-            list2.insert(tkinter.END, (''+data[i]))
-            if '.' not in data[i]:
+            list2.insert(tkinter.END, (' '+data[i]))
+            if not '.' in data[i]:
                 list2.itemconfig(tkinter.END, fg='orange')
             else:
                 list2.itemconfig(tkinter.END, fg='blue')
@@ -358,7 +347,7 @@ def fileClient():
     # 创建标签显示服务端工作目录
     def lab():
         global label
-        data = s.recv(1024)                                # 接收目录
+        data = s.recv(1024)  # 接收目录
         lu = data.decode()
         try:
             label.destroy()
@@ -382,7 +371,8 @@ def fileClient():
         name = message.split()
         name = name[1]  # 获取命令的第二个参数(文件名)
         # 选择对话框, 选择文件的保存路径
-        fileName = tkinter.filedialog.asksaveasfilename(title='Save file to', initialfile=name)
+        fileName = tkinter.filedialog.asksaveasfilename(title='保存文件到',
+                                            initialfile=name)
         # 如果文件名非空才进行下载
         if fileName:
             s.send(message.encode())
@@ -390,8 +380,8 @@ def fileClient():
                 while True:
                     data = s.recv(1024)
                     if data == 'EOF'.encode():
-                        tkinter.messagebox.showinfo(title='Message',
-                                                    message='Download completed!')
+                        tkinter.messagebox.showinfo(title='提示',
+                                                    message='下载成功!')
                         break
                     f.write(data)
 
@@ -405,13 +395,13 @@ def fileClient():
             content = 'get' + content
             get(content)
             cd('cd same')
-        elif content == 'Return to the previous dir':
+        elif content == ' 返回上一级目录':
             content = 'cd ..'
             cd(content)
         else:
             content = 'cd ' + content
             cd(content)
-        lab()                                   # 刷新显示页面
+        lab()  # 刷新显示页面
         
     # 在列表框上设置绑定事件
     list2.bind('<ButtonRelease-1>', run)
@@ -419,7 +409,7 @@ def fileClient():
     # 上传客户端所在文件夹中指定的文件到服务端, 在函数中获取文件名, 不用传参数
     def put():
         # 选择对话框
-        fileName = tkinter.filedialog.askopenfilename(title='Select upload file')
+        fileName = tkinter.filedialog.askopenfilename(title='选择上传文件')
         # 如果有选择文件才继续执行
         if fileName:
             name = fileName.split('/')[-1]
@@ -431,15 +421,15 @@ def fileClient():
                     if not a:
                         break
                     s.send(a)
-                time.sleep(0.1)                               # 延时确保文件发送完整
+                time.sleep(0.1)  # 延时确保文件发送完整
                 s.send('EOF'.encode())
-                tkinter.messagebox.showinfo(title='Message',
-                                            message='Upload completed!')
+                tkinter.messagebox.showinfo(title='提示',
+                                            message='上传成功!')
         cd('cd same')
-        lab()                                                 # 上传成功后刷新显示页面
+        lab()  # 上传成功后刷新显示页面
 
     # 创建上传按钮, 并绑定上传文件功能
-    upload = tkinter.Button(root, text='Upload file', command=put)
+    upload = tkinter.Button(root, text='上传文件', command=put)
     upload.place(x=600, y=353, height=30, width=80)
 
     # 关闭文件管理器, 待完善
@@ -451,12 +441,14 @@ def fileClient():
         s.close()
 
     # 创建关闭按钮
-    close = tkinter.Button(root, text='Close', command=closeFile)
-    close.place(x=685, y=353, height=30, width=70)
+    close = tkinter.Button(root, text='关闭', command=closeFile)
+    close.place(x=685, y=353, height=30, width=70) 
 
-
+def file():
+    fileClient()
+    
 # 创建文件按钮
-fBut = tkinter.Button(root, text='File', command=fileClient)
+fBut = tkinter.Button(root, text='文件', command=file)
 fBut.place(x=185, y=320, width=60, height=30)
 
 # 创建多行文本框, 显示在线用户
@@ -476,13 +468,13 @@ def users():
 
 # 查看在线用户按钮
 button1 = tkinter.Button(root, text='Users online', command=users)
-button1.place(x=485, y=320, width=90, height=30)
+button1.place(x=505, y=320, width=70, height=30)
 
 # 创建输入文本框和关联变量
 a = tkinter.StringVar()
 a.set('')
 entry = tkinter.Entry(root, width=120, textvariable=a)
-entry.place(x=5, y=350, width=570, height=40)
+entry.place(x=5, y=348, width=570, height=40)
 
 
 def call_robot(url, apikey, msg):
@@ -533,22 +525,22 @@ def send(*args):
     if chat == user:
         tkinter.messagebox.showerror('Send error', message='Cannot talk about yourself in private!')
         return
-    mes = entry.get() + ':;' + user + ':;' + chat            # 添加聊天对象标记
+    mes = entry.get() + ':;' + user + ':;' + chat  # 添加聊天对象标记
     s.send(mes.encode())
-    a.set('')                                                # 发送后清空文本框
+    a.set('')  # 发送后清空文本框
 
 
 # 创建发送按钮
 button = tkinter.Button(root, text='Send', command=send)
 button.place(x=515, y=353, width=60, height=30)
-root.bind('<Return>', send)                                  # 绑定回车发送信息
+root.bind('<Return>', send)  # 绑定回车发送信息
 
-# 视频聊天部分
-IsOpen = False                                               # 判断视频/音频的服务器是否已打开
-Resolution = 0                                               # 图像传输的分辨率 0-4依次递减
-Version = 4                                                  # 传输协议版本 IPv4/IPv6
-ShowMe = True                                                # 视频聊天时是否打开本地摄像头
-AudioOpen = True                                             # 是否打开音频聊天
+########################################################################################
+IsOpen = False
+Resolution = 0
+Version = 4
+ShowMe = True
+AudioOpen = True
 
 
 def video_invite():
@@ -669,10 +661,9 @@ def video_connect_option():
 
 
 buttonCapture = tkinter.Button(root, text="Video", command=video_connect_option)
-buttonCapture.place(x=245, y=320, width=60, height=30)
+buttonCapture.place(x=240, y=320, width=60, height=30)
 
-
-# 私聊功能
+########################################################################################
 def private(*args):
     global chat
     # 获取点击的索引然后得到内容(用户名)
@@ -687,12 +678,9 @@ def private(*args):
         ti = user + '  -->  ' + chat
         root.title(ti)
 
-
 # 在显示用户列表框上设置绑定事件
 listbox1.bind('<ButtonRelease-1>', private)
-
-
-# 用于时刻接收服务端发送的信息并打印
+# 用于时刻接收服务端发送的信息并打印,
 def recv():
     global users
     while True:
@@ -703,20 +691,20 @@ def recv():
             data = json.loads(data)
             users = data
             listbox1.delete(0, tkinter.END)  # 清空列表框
-            number = ('   Users online: ' + str(len(data)))
+            number = ('     在线人数: ' + str(len(data)) + ' 人')
             listbox1.insert(tkinter.END, number)
-            listbox1.itemconfig(tkinter.END, fg='green', bg="#f0f0ff")
+            listbox1.itemconfig(tkinter.END,fg='green', bg="#f0f0ff")
             listbox1.insert(tkinter.END, '------Group chat-------')
             listbox1.insert(tkinter.END, 'Robot')
-            listbox1.itemconfig(tkinter.END, fg='green')
+            listbox1.itemconfig(tkinter.END,fg='green')
             for i in range(len(data)):
                 listbox1.insert(tkinter.END, (data[i]))
-                listbox1.itemconfig(tkinter.END, fg='green')
+                listbox1.itemconfig(tkinter.END,fg='green') 
         except:
             data = data.split(':;')
-            data1 = data[0].strip()                     # 消息
-            data2 = data[1]                             # 发送信息的用户名
-            data3 = data[2]                             # 聊天对象
+            data1 = data[0].strip()  # 消息
+            data2 = data[1]  # 发送信息的用户名
+            data3 = data[2]  # 聊天对象
             if 'INVITE' in data1:
                 if data3 == 'Robot':
                     tkinter.messagebox.showerror('Connect error', message='Unable to make video chat with robot!')
@@ -731,14 +719,14 @@ def recv():
             # 判断是不是表情
             # 如果字典里有则贴图
             if (markk in dic) or pic[0] == '``':
-                data4 = '\n' + data2 + '：'                               # 例:名字-> \n名字：
+                data4 = '\n' + data2 + '：'  # 例:名字-> \n名字：
                 if data3 == '------Group chat-------':
-                    if data2 == '\n' + user:                              # 如果是自己则将则字体变为蓝色
+                    if data2 == '\n' + user:  # 如果是自己则将则字体变为蓝色
                         listbox.insert(tkinter.END, data4, 'blue')
                     else:
-                        listbox.insert(tkinter.END, data4, 'green')       # END将信息加在最后一行
-                elif data2 == user or data3 == user:                      # 显示私聊
-                    listbox.insert(tkinter.END, data4, 'red')             # END将信息加在最后一行
+                        listbox.insert(tkinter.END, data4, 'green')  # END将信息加在最后一行
+                elif data2 == user or data3 == user:  # 显示私聊
+                    listbox.insert(tkinter.END, data4, 'red')  # END将信息加在最后一行 
                 if pic[0] == '``':
                     # 从服务端下载发送的图片
                     fileGet(pic[1])
@@ -748,10 +736,10 @@ def recv():
             else:
                 data1 = '\n' + data1
                 if data3 == '------Group chat-------':
-                    if data2 == '\n' + user:                              # 如果是自己则将则字体变为蓝色
+                    if data2 == '\n' + user:  # 如果是自己则将则字体变为蓝色
                         listbox.insert(tkinter.END, data1, 'blue')
                     else:
-                        listbox.insert(tkinter.END, data1, 'green')       # END将信息加在最后一行
+                        listbox.insert(tkinter.END, data1, 'green')  # END将信息加在最后一行
                     if len(data) == 4:
                         listbox.insert(tkinter.END, '\n' + data[3], 'red')
                 elif data3 == 'Robot':
@@ -763,9 +751,9 @@ def recv():
                     reply = call_robot(url, apikey, data1.split('：')[1])
                     reply_txt = '\nRobot:' + reply['results'][0]['values']['text']
                     listbox.insert(tkinter.END, reply_txt, 'red')
-                elif data2 == user or data3 == user:                      # 显示私聊
-                    listbox.insert(tkinter.END, data1, 'red')             # END将信息加在最后一行
-            listbox.see(tkinter.END)                                      # 显示在最后
+                elif data2 == user or data3 == user:  # 显示私聊
+                    listbox.insert(tkinter.END, data1, 'red')  # END将信息加在最后一行 
+            listbox.see(tkinter.END)  # 显示在最后
             
         
 r = threading.Thread(target=recv)
