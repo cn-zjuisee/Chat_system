@@ -80,7 +80,7 @@ class ChatServer(threading.Thread):
             user = self.addr[0] + ':' + str(self.addr[1])
         users.append((self.conn, user, self.addr))
         print(' New connection:', self.addr, ':', user, end='')         # 打印用户名
-        d = onlines()                                                  # 有新连接则刷新客户端的在线用户显示
+        d = onlines()                                                   # 有新连接则刷新客户端的在线用户显示
         self.recv(d)
         try:
             while True:
@@ -89,8 +89,8 @@ class ChatServer(threading.Thread):
                 self.recv(data)                         # 保存信息到队列
             # self.conn.close()
         except:
-            print(user + 'connection lose')
-            self.delUsers()  # 将断开用户移出users
+            print(user + ' Connection lose')
+            self.delUsers()                             # 将断开用户移出users
             self.conn.close()
 
     # 判断断开用户在users中是第几位并移出列表, 刷新客户端的在线用户显示
@@ -126,7 +126,7 @@ class ChatServer(threading.Thread):
                         # user[i][1]是用户名, users[i][2]是addr, 将message[0]改为用户名
                         for j in range(len(users)):
                             if message[0] == users[j][2]:
-                                print('this: message is from user[{}]'.format(j))
+                                print(' this: message is from user[{}]'.format(j))
                                 if '@Robot' in message[1] and reply_text == '':
                                     
                                     msg = message[1].split(':;')[0]
@@ -142,12 +142,15 @@ class ChatServer(threading.Thread):
                                     data = ' ' + users[j][1] + '：' + message[1]
                                     break      
                         users[i][0].send(data.encode())
-                data = data.split(':;')[0]
+                # data = data.split(':;')[0]
                 if isinstance(message[1], list):  # 同上
                     # 如果是list则打包后直接发送  
                     data = json.dumps(message[1])
                     for i in range(len(users)):
-                        users[i][0].send(data.encode())
+                        try:
+                            users[i][0].send(data.encode())
+                        except:
+                            pass
 
     def run(self):
 
@@ -157,14 +160,10 @@ class ChatServer(threading.Thread):
         q = threading.Thread(target=self.sendData)
         q.start()
         while True:
-            try:
-                self.conn, self.addr = self.s.accept()
-                t = threading.Thread(target=self.tcp_connect)
-                t.start()
-            except Exception as e:
-                print(e)
-                break
-        self.s.close()
+            self.conn, self.addr = self.s.accept()
+            t = threading.Thread(target=self.tcp_connect)
+            t.start()
+        # self.s.close()
 
 ################################################################
 
@@ -263,13 +262,9 @@ class FileServer(threading.Thread):
         self.s.bind(self.ADDR)
         self.s.listen(3)
         while True:
-            try:
-                self.conn, addr = self.s.accept()
-                t = threading.Thread(target=self.tcp_connect, args=(self.conn, addr))
-                t.start()
-            except Exception as e:
-                print(e)
-                break
+            self.conn, addr = self.s.accept()
+            t = threading.Thread(target=self.tcp_connect, args=(self.conn, addr))
+            t.start()
         self.s.close()
 
 #############################################################################
@@ -339,13 +334,9 @@ class PictureServer(threading.Thread):
         self.s.listen(5)
         print('Picture server starts running...')
         while True:
-            try:
-                self.conn, addr = self.s.accept()
-                t = threading.Thread(target=self.tcp_connect, args=(self.conn, addr))
-                t.start()
-            except Exception as e:
-                print(e)
-                break
+            self.conn, addr = self.s.accept()
+            t = threading.Thread(target=self.tcp_connect, args=(self.conn, addr))
+            t.start()
         self.s.close()
 
 ####################################################################################
