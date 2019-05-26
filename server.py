@@ -67,6 +67,7 @@ class ChatServer(threading.Thread):
         # self.setDaemon(True)
         self.ADDR = ('', port)
         # self.PORT = port
+        os.chdir(sys.path[0])
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn = None
         self.addr = None
@@ -279,7 +280,8 @@ class PictureServer(threading.Thread):
         # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn = None
-        self.folder = './Server image cache/'  # 图片的保存文件夹
+        os.chdir(sys.path[0])
+        self.folder = '.\\Server_image_cache\\'  # 图片的保存文件夹
 
     def tcp_connect(self, conn, addr):
         while True:
@@ -298,12 +300,12 @@ class PictureServer(threading.Thread):
         print(message)
         name = message.split()[1]                   # 获取第二个参数(文件名)
         fileName = self.folder + name               # 将文件夹和图片名连接起来
-        with open(fileName, 'rb') as f:
-            while True:
-                a = f.read(1024)
-                if not a:
-                    break
-                self.conn.send(a)
+        f = open(fileName, 'rb')
+        while True:
+            a = f.read(1024)
+            if not a:
+                break
+            self.conn.send(a)
         time.sleep(0.1)                             # 延时确保文件发送完整
         self.conn.send('EOF'.encode())
         print('Image sent!')
@@ -311,16 +313,17 @@ class PictureServer(threading.Thread):
     # 保存上传的文件到当前工作目录
     def recvFile(self, message):
         print(message)
-        name = message.split()[1]                   # 获取文件名
-        fileName = self.folder + name               # 将文件夹和图片名连接起来
+        name = message.split(' ')[1]                   # 获取文件名
+        fileName = self.folder + name                  # 将文件夹和图片名连接起来
+        print(fileName)
         print('Start saving!')
-        with open(fileName, 'wb') as f:
-            while True:
-                data = self.conn.recv(1024)
-                if data == 'EOF'.encode():
-                    print('Saving completed!')
-                    break
-                f.write(data)
+        f = open(fileName, 'wb+')
+        while True:
+            data = self.conn.recv(1024)
+            if data == 'EOF'.encode():
+                print('Saving completed!')
+                break
+            f.write(data)
 
     # 判断输入的命令并执行对应的函数
     def recv_func(self, order, message):

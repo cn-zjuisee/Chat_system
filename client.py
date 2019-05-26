@@ -177,7 +177,7 @@ def fileGet(name):
     ss2.connect((IP, PORT3))
     message = 'get ' + name
     ss2.send(message.encode())
-    fileName = '.\\Client image cache\\' + name
+    fileName = '.\\Client_image_cache\\' + name
     print('Start downloading image!')
     with open(fileName, 'wb') as f:
         while True:
@@ -196,8 +196,10 @@ def filePut(fileName):
     ss = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ss.connect((IP, PORT3))
     # 截取文件名
+    print(fileName)
     name = fileName.split('/')[-1]
-    message = 'put  ' + name
+    print(name)
+    message = 'put ' + name
     ss.send(message.encode())
     time.sleep(0.1)
     print('Start uploading image!')
