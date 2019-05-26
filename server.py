@@ -64,7 +64,7 @@ def onlines():
 class ChatServer(threading.Thread):
     def __init__(self, port):
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+        # self.setDaemon(True)
         self.ADDR = ('', port)
         # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -79,7 +79,7 @@ class ChatServer(threading.Thread):
         if user == 'no':
             user = self.addr[0] + ':' + str(self.addr[1])
         users.append((self.conn, user, self.addr))
-        print('New connection:', self.addr, ':', user, end='')         # 打印用户名
+        print(' New connection:', self.addr, ':', user, end='')         # 打印用户名
         d = onlines()                                                  # 有新连接则刷新客户端的在线用户显示
         self.recv(d)
         try:
@@ -99,7 +99,7 @@ class ChatServer(threading.Thread):
         for i in users:
             if i[0] == self.conn:
                 users.pop(a)
-                print('Remaining online users: ', end='')         # 打印剩余在线用户(conn)
+                print(' Remaining online users: ', end='')         # 打印剩余在线用户(conn)
                 d = onlines()
                 self.recv(d)
                 print(d)
@@ -172,7 +172,7 @@ class ChatServer(threading.Thread):
 class FileServer(threading.Thread):
     def __init__(self, port):
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+        # self.setDaemon(True)
         self.ADDR = ('', port)
         # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -181,7 +181,7 @@ class FileServer(threading.Thread):
         self.conn = None
 
     def tcp_connect(self, conn, addr):
-        print('Connected by: ', addr)
+        print(' Connected by: ', addr)
         
         while True:
             data = conn.recv(1024)
@@ -279,7 +279,7 @@ class PictureServer(threading.Thread):
 
     def __init__(self, port):
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+        # self.setDaemon(True)
         self.ADDR = ('', port)
         # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

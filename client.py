@@ -580,6 +580,29 @@ def video_accept(host_name):
     IsOpen = False
 
 
+def video_invite_window(message, inviter_name):
+
+    invite_window = tkinter.Toplevel()
+    invite_window.geometry('300x100')
+    invite_window.title('Invitation')
+    label1 = tkinter.Label(invite_window, bg='#f0f0f0', width=20, text=inviter_name)
+    label1.pack()
+    label2 = tkinter.Label(invite_window, bg='#f0f0f0', width=20, text='invites you to video chat!')
+    label2.pack()
+
+    def accept_invite():
+        video_accept(message[message.index('INVITE') + 6:])
+        invite_window.destroy()
+
+    def refuse_invite():
+        invite_window.destroy()
+
+    Refuse = tkinter.Button(invite_window, text="Refuse", command=refuse_invite)
+    Refuse.place(x=60, y=60, width=60, height=25)
+    Accept = tkinter.Button(invite_window, text="Accept", command=accept_invite)
+    Accept.place(x=180, y=60, width=60, height=25)
+
+
 def video_connect_option():
     global Resolution, ShowMe, Version, AudioOpen
 
@@ -588,7 +611,7 @@ def video_connect_option():
     video_connect_option.title('Connection option')
 
     var1 = tkinter.StringVar()
-    label1 = tkinter.Label(video_connect_option, bg='yellow', width=20, text='Resolution   ')
+    label1 = tkinter.Label(video_connect_option, bg='#f0f0f0', width=20, text='Resolution   ')
     label1.pack()
 
     def print_resolution():
@@ -608,7 +631,7 @@ def video_connect_option():
     r4.pack()
 
     var2 = tkinter.StringVar()
-    label2 = tkinter.Label(video_connect_option, bg='yellow', width=20, text='Protocol version   ')
+    label2 = tkinter.Label(video_connect_option, bg='#f0f0f0', width=20, text='Protocol version   ')
     label2.pack()
 
     def print_version():
@@ -622,7 +645,7 @@ def video_connect_option():
     v1.pack()
 
     var3 = tkinter.StringVar()
-    label3 = tkinter.Label(video_connect_option, bg='yellow', width=20, text='Show yourself   ')
+    label3 = tkinter.Label(video_connect_option, bg='#f0f0f0', width=20, text='Show yourself   ')
     label3.pack()
 
     def print_show():
@@ -641,7 +664,7 @@ def video_connect_option():
     s1.pack()
 
     var4 = tkinter.StringVar()
-    label4 = tkinter.Label(video_connect_option, bg='yellow', width=20, text='Audio open   ')
+    label4 = tkinter.Label(video_connect_option, bg='#f0f0f0', width=20, text='Audio open   ')
     label4.pack()
 
     def print_audio():
@@ -723,7 +746,8 @@ def recv():
                 elif data3 == '------Group chat-------':
                     tkinter.messagebox.showerror('Connect error', message='Group video chat is not supported!')
                 else:
-                    video_accept(data1[data1.index('INVITE')+6:])
+                    video_invite_window(data1, data2)
+                    # video_accept(data1[data1.index('INVITE') + 6:])
                 continue
             markk = data1.split('：')[1]
             # 判断是不是图片

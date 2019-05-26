@@ -24,7 +24,7 @@ def pictureServer():
             recv_func2(order, data)        
         conn.close()
         print('---')
-    folder = './服务端图片缓存/'    # 图片的保存文件夹
+    folder = './Server image cache/'    # 图片的保存文件夹
     # 发送文件函数
     def sendFile2(message):
         print(message)
