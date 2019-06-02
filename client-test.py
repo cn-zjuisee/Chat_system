@@ -183,6 +183,7 @@ def fileGet(name):
     ss2.send(message.encode())
     fileName = '.\\Client_image_cache\\' + name
     print('Start downloading image!')
+    print('Waiting.......')
     with open(fileName, 'wb') as f:
         while True:
             data = ss2.recv(1024)
@@ -207,6 +208,7 @@ def filePut(fileName):
     ss.send(message.encode())
     time.sleep(0.1)
     print('Start uploading image!')
+    print('Waiting.......')
     with open(fileName, 'rb') as f:
         while True:
             a = f.read(1024)

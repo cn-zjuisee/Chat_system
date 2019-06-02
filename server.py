@@ -8,6 +8,7 @@ import os.path
 import requests
 import sys
 
+# IP = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
 IP = ''
 PORT = 50007
 apikey = 'ee19328107fa41e987a42a064a68d0da'
@@ -66,9 +67,13 @@ class ChatServer(threading.Thread):
 
     def __init__(self, port):
         threading.Thread.__init__(self)
+        # self.setDaemon(True)
         self.ADDR = ('', port)
+        # self.PORT = port
         os.chdir(sys.path[0])
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.conn = None
+        # self.addr = None
 
     # 用于接收所有客户端发送信息的函数
     def tcp_connect(self, conn, addr):
@@ -147,6 +152,7 @@ class ChatServer(threading.Thread):
                                     data = ' ' + users[j][1] + '：' + message[1]
                                     break      
                         users[i][0].send(data.encode())
+                # data = data.split(':;')[0]
                 if isinstance(message[1], list):  # 同上
                     # 如果是list则打包后直接发送  
                     data = json.dumps(message[1])
@@ -175,10 +181,13 @@ class ChatServer(threading.Thread):
 class FileServer(threading.Thread):
     def __init__(self, port):
         threading.Thread.__init__(self)
+        # self.setDaemon(True)
         self.ADDR = ('', port)
+        # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.first = r'.\resources'
         os.chdir(self.first)                                     # 把first设为当前工作路径
+        # self.conn = None
 
     def tcp_connect(self, conn, addr):
         print(' Connected by: ', addr)
@@ -275,8 +284,11 @@ class PictureServer(threading.Thread):
 
     def __init__(self, port):
         threading.Thread.__init__(self)
+        # self.setDaemon(True)
         self.ADDR = ('', port)
+        # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.conn = None
         os.chdir(sys.path[0])
         self.folder = '.\\Server_image_cache\\'  # 图片的保存文件夹
 
