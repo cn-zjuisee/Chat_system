@@ -51,17 +51,15 @@ entryUser.place(x=120, y=40, width=130, height=20)
 def login(*args):
     global IP, PORT, user
     IP, PORT = entryIP.get().split(':')  # 获取IP和端口号
-    PORT = int(PORT)  # 端口号需要为int类型
+    PORT = int(PORT)                     # 端口号需要为int类型
     user = entryUser.get()
-    # ----------------------------------
     if not user:
         tkinter.messagebox.showerror('Name type error', message='Username Empty!')
     else:
-        root1.destroy()  # 关闭窗口
-    # ----------------------------------
+        root1.destroy()                  # 关闭窗口
 
 
-root1.bind('<Return>', login)  # 回车绑定登录功能
+root1.bind('<Return>', login)            # 回车绑定登录功能
 but = tkinter.Button(root1, text='Log in', command=login)
 but.place(x=100, y=70, width=70, height=30)
 
@@ -319,7 +317,7 @@ def buttonCaptureClick():
     im.close()
     # 显示全屏幕截图
     w = MyCapture(filename)
-    buttonCapture.wait_window(w.top)
+    sBut.wait_window(w.top)
     # 截图结束，恢复主窗口，并删除临时的全屏幕截图文件
     root.state('normal')
     os.remove(filename)
@@ -558,10 +556,10 @@ button.place(x=515, y=353, width=60, height=30)
 root.bind('<Return>', send)  # 绑定回车发送信息
 
 # 视频聊天部分
-IsOpen = False  # 判断视频/音频的服务器是否已打开
-Resolution = 0  # 图像传输的分辨率 0-4依次递减
-Version = 4  # 传输协议版本 IPv4/IPv6
-ShowMe = True  # 视频聊天时是否打开本地摄像头
+IsOpen = False    # 判断视频/音频的服务器是否已打开
+Resolution = 0    # 图像传输的分辨率 0-4依次递减
+Version = 4       # 传输协议版本 IPv4/IPv6
+ShowMe = True     # 视频聊天时是否打开本地摄像头
 AudioOpen = True  # 是否打开音频聊天
 
 
@@ -605,8 +603,8 @@ def video_invite_window(message, inviter_name):
     label2.pack()
 
     def accept_invite():
-        video_accept(message[message.index('INVITE') + 6:])
         invite_window.destroy()
+        video_accept(message[message.index('INVITE') + 6:])
 
     def refuse_invite():
         invite_window.destroy()
@@ -705,8 +703,8 @@ def video_connect_option():
     Start.place(x=80, y=400, width=60, height=35)
 
 
-buttonCapture = tkinter.Button(root, text="Video", command=video_connect_option)
-buttonCapture.place(x=245, y=320, width=60, height=30)
+vbutton = tkinter.Button(root, text="Video", command=video_connect_option)
+vbutton.place(x=245, y=320, width=60, height=30)
 
 
 # 私聊功能
@@ -759,9 +757,8 @@ def recv():
                     tkinter.messagebox.showerror('Connect error', message='Unable to make video chat with robot!')
                 elif data3 == '------Group chat-------':
                     tkinter.messagebox.showerror('Connect error', message='Group video chat is not supported!')
-                else:
+                elif (data2 == user and data3 == user) or (data2 != user):
                     video_invite_window(data1, data2)
-                    # video_accept(data1[data1.index('INVITE') + 6:])
                 continue
             markk = data1.split('：')[1]
             # 判断是不是图片
@@ -792,7 +789,7 @@ def recv():
                         listbox.insert(tkinter.END, data1, 'green')  # END将信息加在最后一行
                     if len(data) == 4:
                         listbox.insert(tkinter.END, '\n' + data[3], 'pink')
-                elif data3 == 'Robot':
+                elif data3 == 'Robot' and data2 == user:
                     print('Here:Robot')
                     apikey = 'ee19328107fa41e987a42a064a68d0da'
                     url = 'http://openapi.tuling123.com/openapi/api/v2'

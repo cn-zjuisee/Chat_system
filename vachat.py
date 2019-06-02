@@ -68,8 +68,8 @@ class Video_Client(threading.Thread):
         self.setDaemon(True)
         self.ADDR = (ip, port)
         self.showme = showme
-        if level < 3:
-            self.interval = level
+        if int(level) < 3:
+            self.interval = int(level)
         else:
             self.interval = 3
         self.fx = 1 / (self.interval + 1)

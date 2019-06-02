@@ -8,7 +8,6 @@ import os.path
 import requests
 import sys
 
-# IP = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
 IP = ''
 PORT = 50007
 apikey = 'ee19328107fa41e987a42a064a68d0da'
@@ -67,25 +66,21 @@ class ChatServer(threading.Thread):
 
     def __init__(self, port):
         threading.Thread.__init__(self)
-        # self.setDaemon(True)
         self.ADDR = ('', port)
-        # self.PORT = port
         os.chdir(sys.path[0])
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.conn = None
-        # self.addr = None
 
     # 用于接收所有客户端发送信息的函数
     def tcp_connect(self, conn, addr):
         # 连接后将用户信息添加到users列表
         user = conn.recv(1024)                                    # 接收用户名
         user = user.decode()
-        # ----------------------------
-        # for i in range(len(users)):
-        #     if user == users[i][1]:
-        #         print('user already exist')
-        #         user = '' + user + '_2'
-        # ---------------------------- 
+
+        for i in range(len(users)):
+            if user == users[i][1]:
+                print('User already exist')
+                user = '' + user + '_2'
+
         if user == 'no':
             user = addr[0] + ':' + str(addr[1])
         users.append((conn, user, addr))
@@ -152,7 +147,6 @@ class ChatServer(threading.Thread):
                                     data = ' ' + users[j][1] + '：' + message[1]
                                     break      
                         users[i][0].send(data.encode())
-                # data = data.split(':;')[0]
                 if isinstance(message[1], list):  # 同上
                     # 如果是list则打包后直接发送  
                     data = json.dumps(message[1])
@@ -181,13 +175,10 @@ class ChatServer(threading.Thread):
 class FileServer(threading.Thread):
     def __init__(self, port):
         threading.Thread.__init__(self)
-        # self.setDaemon(True)
         self.ADDR = ('', port)
-        # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.first = r'.\resources'
         os.chdir(self.first)                                     # 把first设为当前工作路径
-        self.conn = None
 
     def tcp_connect(self, conn, addr):
         print(' Connected by: ', addr)
@@ -199,18 +190,18 @@ class FileServer(threading.Thread):
                 print('Disconnected from {0}'.format(addr))
                 break
             order = data.split(' ')[0]                             # 获取动作
-            self.recv_func(order, data)
+            self.recv_func(order, data, conn)
                 
         conn.close()
 
     # 传输当前目录列表
-    def sendList(self):
+    def sendList(self, conn):
         listdir = os.listdir(os.getcwd())
         listdir = json.dumps(listdir)
-        self.conn.sendall(listdir.encode())
+        conn.sendall(listdir.encode())
 
     # 发送文件函数
-    def sendFile(self, message):
+    def sendFile(self, message, conn):
         name = message.split()[1]                               # 获取第二个参数(文件名)
         fileName = r'./' + name
         with open(fileName, 'rb') as f:    
@@ -218,23 +209,23 @@ class FileServer(threading.Thread):
                 a = f.read(1024)
                 if not a:
                     break
-                self.conn.send(a)
+                conn.send(a)
         time.sleep(0.1)                                          # 延时确保文件发送完整
-        self.conn.send('EOF'.encode())
+        conn.send('EOF'.encode())
 
     # 保存上传的文件到当前工作目录
-    def recvFile(self, message):
+    def recvFile(self, message, conn):
         name = message.split()[1]                              # 获取文件名
         fileName = r'./' + name
         with open(fileName, 'wb') as f:
             while True:
-                data = self.conn.recv(1024)
+                data = conn.recv(1024)
                 if data == 'EOF'.encode():
                     break
                 f.write(data)
 
     # 切换工作目录
-    def cd(self, message):
+    def cd(self, message, conn):
         message = message.split()[1]                          # 截取目录名
         # 如果是新连接或者下载上传文件后的发送则 不切换 只将当前工作目录发送过去
         if message != 'same':
@@ -254,26 +245,26 @@ class FileServer(threading.Thread):
             f = r'./resources'
             os.chdir(f)
             pat = 'resources'
-        self.conn.send(pat.encode())
+        conn.send(pat.encode())
 
     # 判断输入的命令并执行对应的函数
-    def recv_func(self, order, message):
+    def recv_func(self, order, message, conn):
         if order == 'get':
-            return self.sendFile(message)
+            return self.sendFile(message, conn)
         elif order == 'put':
-            return self.recvFile(message)
+            return self.recvFile(message, conn)
         elif order == 'dir':
-            return self.sendList()
+            return self.sendList(conn)
         elif order == 'cd':
-            return self.cd(message)
+            return self.cd(message, conn)
 
     def run(self):
         print('File server starts running...')
         self.s.bind(self.ADDR)
         self.s.listen(3)
         while True:
-            self.conn, addr = self.s.accept()
-            t = threading.Thread(target=self.tcp_connect, args=(self.conn, addr))
+            conn, addr = self.s.accept()
+            t = threading.Thread(target=self.tcp_connect, args=(conn, addr))
             t.start()
         self.s.close()
 
@@ -284,11 +275,8 @@ class PictureServer(threading.Thread):
 
     def __init__(self, port):
         threading.Thread.__init__(self)
-        # self.setDaemon(True)
         self.ADDR = ('', port)
-        # self.PORT = port
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn = None
         os.chdir(sys.path[0])
         self.folder = '.\\Server_image_cache\\'  # 图片的保存文件夹
 
@@ -300,12 +288,12 @@ class PictureServer(threading.Thread):
             if data == 'quit':
                 break
             order = data.split()[0]  # 获取动作
-            self.recv_func(order, data)
+            self.recv_func(order, data, conn)
         conn.close()
         print('---')
 
     # 发送文件函数
-    def sendFile(self, message):
+    def sendFile(self, message, conn):
         print(message)
         name = message.split()[1]                   # 获取第二个参数(文件名)
         fileName = self.folder + name               # 将文件夹和图片名连接起来
@@ -314,13 +302,13 @@ class PictureServer(threading.Thread):
             a = f.read(1024)
             if not a:
                 break
-            self.conn.send(a)
+            conn.send(a)
         time.sleep(0.1)                             # 延时确保文件发送完整
-        self.conn.send('EOF'.encode())
+        conn.send('EOF'.encode())
         print('Image sent!')
 
     # 保存上传的文件到当前工作目录
-    def recvFile(self, message):
+    def recvFile(self, message, conn):
         print(message)
         name = message.split(' ')[1]                   # 获取文件名
         fileName = self.folder + name                  # 将文件夹和图片名连接起来
@@ -328,26 +316,26 @@ class PictureServer(threading.Thread):
         print('Start saving!')
         f = open(fileName, 'wb+')
         while True:
-            data = self.conn.recv(1024)
+            data = conn.recv(1024)
             if data == 'EOF'.encode():
                 print('Saving completed!')
                 break
             f.write(data)
 
     # 判断输入的命令并执行对应的函数
-    def recv_func(self, order, message):
+    def recv_func(self, order, message, conn):
         if order == 'get':
-            return self.sendFile(message)
+            return self.sendFile(message, conn)
         elif order == 'put':
-            return self.recvFile(message)
+            return self.recvFile(message, conn)
 
     def run(self):
         self.s.bind(self.ADDR)
         self.s.listen(5)
         print('Picture server starts running...')
         while True:
-            self.conn, addr = self.s.accept()
-            t = threading.Thread(target=self.tcp_connect, args=(self.conn, addr))
+            conn, addr = self.s.accept()
+            t = threading.Thread(target=self.tcp_connect, args=(conn, addr))
             t.start()
         self.s.close()
 
