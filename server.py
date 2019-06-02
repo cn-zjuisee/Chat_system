@@ -76,52 +76,51 @@ class ChatServer(threading.Thread):
         # self.addr = None
 
     # 用于接收所有客户端发送信息的函数
-    def tcp_connect(self):
+    def tcp_connect(self, conn, addr):
         # 连接后将用户信息添加到users列表
-        user = self.conn.recv(1024)                                    # 接收用户名
+        user = conn.recv(1024)                                    # 接收用户名
         user = user.decode()
         # ----------------------------
-        for i in range(len(users)):
-            if user == users[i][1]:
-                print('user already exist')
-                user = '' + user + '_2'
+        # for i in range(len(users)):
+        #     if user == users[i][1]:
+        #         print('user already exist')
+        #         user = '' + user + '_2'
         # ---------------------------- 
         if user == 'no':
-            user = self.addr[0] + ':' + str(self.addr[1])
-        users.append((self.conn, user, self.addr))
-        print(' New connection:', self.addr, ':', user, end='')         # 打印用户名
+            user = addr[0] + ':' + str(addr[1])
+        users.append((conn, user, addr))
+        print(' New connection:', addr, ':', user, end='')         # 打印用户名
         d = onlines()                                                   # 有新连接则刷新客户端的在线用户显示
-        self.recv(d)
+        self.recv(d, addr)
         try:
             while True:
-                data = self.conn.recv(1024)
+                data = conn.recv(1024)
                 data = data.decode()
-                self.recv(data)                         # 保存信息到队列
-            self.conn.close()
-            self.delUsers()
+                self.recv(data, addr)                         # 保存信息到队列
+            conn.close()
         except:
             print(user + ' Connection lose')
-            self.delUsers()                             # 将断开用户移出users
-            self.conn.close()
+            self.delUsers(conn, addr)                             # 将断开用户移出users
+            conn.close()
 
     # 判断断开用户在users中是第几位并移出列表, 刷新客户端的在线用户显示
-    def delUsers(self):
+    def delUsers(self, conn, addr):
         a = 0
         for i in users:
-            if i[0] == self.conn:
+            if i[0] == conn:
                 users.pop(a)
                 print(' Remaining online users: ', end='')         # 打印剩余在线用户(conn)
                 d = onlines()
-                self.recv(d)
+                self.recv(d, addr)
                 print(d)
                 break
             a += 1
 
     # 将接收到的信息(ip,端口以及发送的信息)存入que队列
-    def recv(self, data):
+    def recv(self, data, addr):
         lock.acquire()
         try:
-            que.put((self.addr, data))
+            que.put((addr, data))
         finally:
             lock.release()
 
@@ -171,8 +170,8 @@ class ChatServer(threading.Thread):
         q = threading.Thread(target=self.sendData)
         q.start()
         while True:
-            self.conn, self.addr = self.s.accept()
-            t = threading.Thread(target=self.tcp_connect)
+            conn, addr = self.s.accept()
+            t = threading.Thread(target=self.tcp_connect, args=(conn, addr))
             t.start()
         self.s.close()
 
