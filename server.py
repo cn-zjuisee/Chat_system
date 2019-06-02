@@ -8,7 +8,8 @@ import os.path
 import requests
 import sys
 
-IP = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+# IP = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+IP = ''
 PORT = 50007
 apikey = 'ee19328107fa41e987a42a064a68d0da'
 url = 'http://openapi.tuling123.com/openapi/api/v2'
@@ -62,6 +63,8 @@ def onlines():
 
 
 class ChatServer(threading.Thread):
+    global users, que, lock
+
     def __init__(self, port):
         threading.Thread.__init__(self)
         # self.setDaemon(True)
@@ -69,14 +72,20 @@ class ChatServer(threading.Thread):
         # self.PORT = port
         os.chdir(sys.path[0])
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn = None
-        self.addr = None
+        # self.conn = None
+        # self.addr = None
 
     # 用于接收所有客户端发送信息的函数
     def tcp_connect(self):
         # 连接后将用户信息添加到users列表
         user = self.conn.recv(1024)                                    # 接收用户名
         user = user.decode()
+        # ----------------------------
+        for i in range(len(users)):
+            if user == users[i][1]:
+                print('user already exist')
+                user = '' + user + '_2'
+        # ---------------------------- 
         if user == 'no':
             user = self.addr[0] + ':' + str(self.addr[1])
         users.append((self.conn, user, self.addr))
@@ -88,7 +97,8 @@ class ChatServer(threading.Thread):
                 data = self.conn.recv(1024)
                 data = data.decode()
                 self.recv(data)                         # 保存信息到队列
-            # self.conn.close()
+            self.conn.close()
+            self.delUsers()
         except:
             print(user + ' Connection lose')
             self.delUsers()                             # 将断开用户移出users
@@ -164,7 +174,7 @@ class ChatServer(threading.Thread):
             self.conn, self.addr = self.s.accept()
             t = threading.Thread(target=self.tcp_connect)
             t.start()
-        # self.s.close()
+        self.s.close()
 
 ################################################################
 
@@ -231,7 +241,7 @@ class FileServer(threading.Thread):
         if message != 'same':
             f = r'./' + message
             os.chdir(f)
-        path = ''
+        # path = ''
         path = os.getcwd().split('\\')                        # 当前工作目录
         for i in range(len(path)):
             if path[i] == 'resources':
