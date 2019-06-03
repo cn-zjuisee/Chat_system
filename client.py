@@ -558,7 +558,6 @@ button.place(x=515, y=353, width=60, height=30)
 root.bind('<Return>', send)  # 绑定回车发送信息
 
 # 视频聊天部分
-IsOpen = False    # 判断视频/音频的服务器是否已打开
 Resolution = 0    # 图像传输的分辨率 0-4依次递减
 Version = 4       # 传输协议版本 IPv4/IPv6
 ShowMe = True     # 视频聊天时是否打开本地摄像头
@@ -566,7 +565,7 @@ AudioOpen = True  # 是否打开音频聊天
 
 
 def video_invite():
-    global IsOpen, Version, AudioOpen
+    global Version, AudioOpen
     if Version == 4:
         host_name = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
     else:
@@ -575,24 +574,21 @@ def video_invite():
 
     invite = 'INVITE' + host_name + ':;' + user + ':;' + chat
     s.send(invite.encode())
-    if not IsOpen:
-        vserver = vachat.Video_Server(10087, Version)
-        if AudioOpen:
-            aserver = vachat.Audio_Server(10088, Version)
-            aserver.start()
-        vserver.start()
-        IsOpen = True
+    vserver = vachat.Video_Server(10087, Version)
+    if AudioOpen:
+        aserver = vachat.Audio_Server(10088, Version)
+        aserver.start()
+    vserver.start()
 
 
 def video_accept(host_name):
-    global IsOpen, Resolution, ShowMe, Version, AudioOpen
+    global Resolution, ShowMe, Version, AudioOpen
 
     vclient = vachat.Video_Client(host_name, 10087, ShowMe, Resolution, Version)
     if AudioOpen:
         aclient = vachat.Audio_Client(host_name, 10088, Version)
         aclient.start()
     vclient.start()
-    IsOpen = False
 
 
 def video_invite_window(message, inviter_name):
@@ -759,7 +755,7 @@ def recv():
                     tkinter.messagebox.showerror('Connect error', message='Unable to make video chat with robot!')
                 elif data3 == '------Group chat-------':
                     tkinter.messagebox.showerror('Connect error', message='Group video chat is not supported!')
-                elif (data2 == user and data3 == user) or (data2 != user):
+                elif data3 == user:
                     video_invite_window(data1, data2)
                 continue
             markk = data1.split('：')[1]

@@ -16,7 +16,7 @@ TERMINATE = False
 
 
 class Video_Server(threading.Thread):
-    def __init__(self, port, version) :
+    def __init__(self, port, version):
         global TERMINATE
         TERMINATE = False
         threading.Thread.__init__(self)
@@ -27,7 +27,7 @@ class Video_Server(threading.Thread):
         else:
             self.sock = socket(AF_INET6, SOCK_STREAM)
 
-    def __del__(self):
+    def delete(self):
         global TERMINATE
         TERMINATE = True
         self.sock.close()
@@ -37,29 +37,33 @@ class Video_Server(threading.Thread):
             pass
 
     def run(self):
-        print("VEDIO server starts...")
-        self.sock.bind(self.ADDR)
-        self.sock.listen(1)
-        conn, addr = self.sock.accept()
-        print("remote VEDIO client success connected...")
-        data = "".encode("utf-8")
-        payload_size = struct.calcsize("L")
-        cv2.namedWindow('Remote', cv2.WINDOW_AUTOSIZE)
-        while True:
-            while len(data) < payload_size:
-                data += conn.recv(81920)
-            packed_size = data[:payload_size]
-            data = data[payload_size:]
-            msg_size = struct.unpack("L", packed_size)[0]
-            while len(data) < msg_size:
-                data += conn.recv(81920)
-            zframe_data = data[:msg_size]
-            data = data[msg_size:]
-            frame_data = zlib.decompress(zframe_data)
-            frame = pickle.loads(frame_data)
-            cv2.imshow('Remote', frame)
-            if cv2.waitKey(1) & 0xFF == 27:
-                break
+        try:
+            self.sock.bind(self.ADDR)
+            self.sock.listen(1)
+            print("VEDIO server starts...")
+            conn, addr = self.sock.accept()
+            print("remote VEDIO client success connected...")
+            data = "".encode("utf-8")
+            payload_size = struct.calcsize("L")
+            cv2.namedWindow('Remote', cv2.WINDOW_AUTOSIZE)
+            while True:
+                while len(data) < payload_size:
+                    data += conn.recv(81920)
+                packed_size = data[:payload_size]
+                data = data[payload_size:]
+                msg_size = struct.unpack("L", packed_size)[0]
+                while len(data) < msg_size:
+                    data += conn.recv(81920)
+                zframe_data = data[:msg_size]
+                data = data[msg_size:]
+                frame_data = zlib.decompress(zframe_data)
+                frame = pickle.loads(frame_data)
+                cv2.imshow('Remote', frame)
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+            self.delete()
+        except:
+            print('Your video server is already running')
 
 
 class Video_Client(threading.Thread):
@@ -82,7 +86,7 @@ class Video_Client(threading.Thread):
         self.cap = cv2.VideoCapture(0)
         print("VEDIO client starts...")
 
-    def __del__(self) :
+    def delete(self):
         self.sock.close()
         self.cap.release()
         if self.showme:
@@ -118,21 +122,22 @@ class Video_Client(threading.Thread):
                 break
             for i in range(self.interval):
                 self.cap.read()
+        self.delete()
 
 
 class Audio_Server(threading.Thread):
-    def __init__(self, port, version) :
+    def __init__(self, port, version):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.ADDR = ('', port)
         if version == 4:
-            self.sock = socket(AF_INET ,SOCK_STREAM)
+            self.sock = socket(AF_INET, SOCK_STREAM)
         else:
-            self.sock = socket(AF_INET6 ,SOCK_STREAM)
+            self.sock = socket(AF_INET6, SOCK_STREAM)
         self.p = pyaudio.PyAudio()
         self.stream = None
 
-    def __del__(self):
+    def delete(self):
         if self.stream is not None:
             self.stream.stop_stream()
             self.stream.close()
@@ -140,35 +145,36 @@ class Audio_Server(threading.Thread):
 
     def run(self):
         global TERMINATE
-        print("AUDIO server starts...")
-        self.sock.bind(self.ADDR)
-        self.sock.listen(1)
-        conn, addr = self.sock.accept()
-        print("remote AUDIO client success connected...")
-        data = "".encode("utf-8")
-        payload_size = struct.calcsize("L")
-        self.stream = self.p.open(format=FORMAT,
-                                  channels=CHANNELS,
-                                  rate=RATE,
-                                  output=True,
-                                  frames_per_buffer=CHUNK
-                                  )
-        while True:
-            if TERMINATE:
-                self.sock.close()
-                break
-            while len(data) < payload_size:
-                data += conn.recv(81920)
-            packed_size = data[:payload_size]
-            data = data[payload_size:]
-            msg_size = struct.unpack("L", packed_size)[0]
-            while len(data) < msg_size:
-                data += conn.recv(81920)
-            frame_data = data[:msg_size]
-            data = data[msg_size:]
-            frames = pickle.loads(frame_data)
-            for frame in frames:
-                self.stream.write(frame, CHUNK)
+        try:
+            self.sock.bind(self.ADDR)
+            self.sock.listen(1)
+            print("AUDIO server starts...")
+            conn, addr = self.sock.accept()
+            print("remote AUDIO client success connected...")
+            data = "".encode("utf-8")
+            payload_size = struct.calcsize("L")
+            self.stream = self.p.open(format=FORMAT,
+                                      channels=CHANNELS,
+                                      rate=RATE,
+                                      output=True,
+                                      frames_per_buffer=CHUNK
+                                      )
+            while not TERMINATE:
+                while len(data) < payload_size:
+                    data += conn.recv(81920)
+                packed_size = data[:payload_size]
+                data = data[payload_size:]
+                msg_size = struct.unpack("L", packed_size)[0]
+                while len(data) < msg_size:
+                    data += conn.recv(81920)
+                frame_data = data[:msg_size]
+                data = data[msg_size:]
+                frames = pickle.loads(frame_data)
+                for frame in frames:
+                    self.stream.write(frame, CHUNK)
+            self.delete()
+        except:
+            print('Your audio server is already running')
 
 
 class Audio_Client(threading.Thread):
@@ -184,7 +190,7 @@ class Audio_Client(threading.Thread):
         self.stream = None
         print("AUDIO client starts...")
 
-    def __del__(self):
+    def delete(self):
         self.sock.close()
         if self.stream is not None:
             self.stream.stop_stream()
@@ -215,3 +221,5 @@ class Audio_Client(threading.Thread):
                 self.sock.sendall(struct.pack("L", len(senddata)) + senddata)
             except:
                 break
+        self.delete()
+
